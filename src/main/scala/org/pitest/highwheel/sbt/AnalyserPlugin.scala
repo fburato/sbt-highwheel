@@ -13,30 +13,30 @@ import scala.collection.JavaConverters._
 object AnalyserPlugin  extends AutoPlugin {
 
   object autoImport {
-    val specFile = settingKey[File]("Path to the specification file")
-    val analysisMode = settingKey[String]("Analysis mode. Either strict or loose")
-    val analysisPaths = settingKey[Seq[File]]("Files to add to the analysis")
-    val analyse = taskKey[Unit]("Analyse output directories")
-    lazy val baseAnalysisSettings = Seq(
-      specFile in analyse := baseDirectory.value / "spec.hwm",
-      analysisMode in analyse := "strict",
-      analysisPaths in analyse := Seq(classDirectory.value),
-      analyse := {
-        val log = streams.value.log
-        Analyser(log,(specFile in analyse).value,(analysisPaths in analyse).value,(analysisMode in analyse).value)
-      }
-    )
+    val highwheelSpecFile = settingKey[File]("Path to the specification file")
+    val highwheelAnalysisMode = settingKey[String]("Analysis mode. Either strict or loose")
+    val highwheelAnalysisPaths = settingKey[Seq[File]]("Projects to add to the analysis")
+    val highwheelAnalyse = taskKey[Unit]("Analyse output directories")
   }
 
   import autoImport._
 
-  override lazy val projectSettings = inConfig(Compile)(baseAnalysisSettings)
+  override lazy val projectSettings = Seq(
+    highwheelSpecFile := baseDirectory.value / "spec.hwm",
+    highwheelAnalysisMode := "strict",
+    highwheelAnalysisPaths := Seq((classDirectory in Compile).value),
+    highwheelAnalyse := {
+      val log = streams.value.log
+      Analyser(log,highwheelSpecFile.value,highwheelAnalysisPaths.value,highwheelAnalysisMode.value)
+    }
+  )
 }
 
 object Analyser {
 
   def apply(log: ManagedLogger, specFile: File, analysisPaths: Seq[File],analysisMode: String): Unit = {
     log.info(s"Using specification file: ${specFile.getAbsolutePath}")
+
     val executionMode = getExecutionMode(analysisMode).getOrElse(throw new Exception("Analysis mode needs to be either 'strict' or 'loose'"))
     val facade = new AnalyserFacade(printer(log),pathSink(log),measureSink(log),strictAnalysisSink(log),looseAnalysisSink(log))
     facade.runAnalysis(new util.ArrayList(analysisPaths.map{ f => f.getAbsolutePath}.asJavaCollection),specFile.getAbsolutePath,executionMode)

@@ -1,7 +1,6 @@
 lazy val root = (project in file("."))
     .settings(
     name := "sbt-highwheel",
-    version := "0.1-SNAPSHOT",
     organization := "com.github.fburato",
     scalaVersion := "2.12.5",
     sbtPlugin := true,

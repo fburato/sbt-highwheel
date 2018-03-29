@@ -8,8 +8,8 @@ The plugin introduces the following settings:
 * (highwheelSpecFile: File) is the file to the specification file to use for the analysis. Defaults
 to `baseDirectory / "spec.hwm"`
 * (highwheelAnalysisMode: String) specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
-strict
-* (highwheelAnalysisPaths: Seq[File]) specifies the paths to add to the analysis. Defaults to (classDirectory in Compile)
+`strict`
+* (highwheelAnalysisPaths: Seq[File]) specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
 
 
 The plugin also introduces the following tasks:
@@ -23,7 +23,7 @@ Add to your `project/plugins.sbt` file the following line:
 ```scala
 //resolvers += Resolver.mavenLocal
 
-addSbtPlugin("org.pitest" %% "sbt-highwheel" % "0.1-SNAPSHOT")
+addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.0")
 ```
 
 Uncomment resolvers if you have installed highwheel or the pluing locally.
@@ -54,7 +54,7 @@ lazy val root = project.in(file("."))
   .aggregate(core, web, datagateway)
   .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
   .settings(
-    name := "perfect-killah",
+    name := "my-project",
     version := "0.1",
     scalaVersion := "2.12.5"
    )
@@ -75,7 +75,7 @@ lazy val root = project.in(file("."))
   .aggregate(core, web, datagateway)
   .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
   .settings(
-    name := "perfect-killah",
+    name := "my-project",
     version := "0.1",
     scalaVersion := "2.12.5",
     highwheelAnalysisPaths := Seq((classDirectory in core in Compile).value,(classDirectory in web in Compile).value,(classDirectory in datagateway in Compile).value)
@@ -95,7 +95,7 @@ lazy val root = project.in(file("."))
   .aggregate(core, web, datagateway)
   .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
   .settings(
-    name := "perfect-killah",
+    name := "my-project",
     version := "0.1",
     scalaVersion := "2.12.5",
     highwheelAnalysisPaths := Seq((classDirectory in core in Compile).value,(classDirectory in web in Compile).value,(classDirectory in datagateway in Compile).value),

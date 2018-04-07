@@ -20,10 +20,8 @@ lazy val release = Seq(
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
-  // License of your choice
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
 
-  // or if you want to set these fields manually
   homepage := Some(url("https://github.com/fburato/sbt-highwheel")),
   scmInfo := Some(
   ScmInfo(
@@ -44,7 +42,7 @@ lazy val resolver = Seq(
 )
 
 lazy val dependenciesList = Seq (
-  "com.github.fburato" % "highwheel-modules" % "2.0"
+  "com.github.fburato" % "highwheel-modules-core" % "1.0.0-SNAPSHOT"
 )
 
 lazy val addDependencies = Seq(

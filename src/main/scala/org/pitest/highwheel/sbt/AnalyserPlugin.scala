@@ -4,9 +4,9 @@ import java.util
 
 import sbt.Keys._
 import sbt._
-import org.pitest.highwheel.modules.AnalyserFacade
-import org.pitest.highwheel.modules.AnalyserFacade.EventSink._
-import org.pitest.highwheel.modules.AnalyserFacade._
+import com.github.fburato.highwheelmodules.AnalyserFacade
+import com.github.fburato.highwheelmodules.AnalyserFacade.EventSink._
+import com.github.fburato.highwheelmodules.AnalyserFacade._
 import sbt.internal.util.ManagedLogger
 import scala.collection.JavaConverters._
 

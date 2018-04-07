@@ -1,4 +1,4 @@
-package org.pitest.highwheel.sbt
+package com.github.fburato.highwheelmodulessbt
 
 import java.util
 
@@ -16,7 +16,8 @@ object AnalyserPlugin  extends AutoPlugin {
     val highwheelSpecFile = settingKey[File]("Path to the specification file")
     val highwheelAnalysisMode = settingKey[String]("Analysis mode. Either strict or loose")
     val highwheelAnalysisPaths = settingKey[Seq[File]]("Projects to add to the analysis")
-    val highwheelAnalyse = taskKey[Unit]("Analyse output directories")
+    val highwheelAnalyse = taskKey[Unit]("Analyse output directories after compiling")
+    val highwheelBaseAnalyseTask = taskKey[Unit]("Analyse output directories")
   }
 
   import autoImport._
@@ -25,10 +26,11 @@ object AnalyserPlugin  extends AutoPlugin {
     highwheelSpecFile := baseDirectory.value / "spec.hwm",
     highwheelAnalysisMode := "strict",
     highwheelAnalysisPaths := Seq((classDirectory in Compile).value),
-    highwheelAnalyse := {
+    highwheelBaseAnalyseTask := {
       val log = streams.value.log
       Analyser(log,highwheelSpecFile.value,highwheelAnalysisPaths.value,highwheelAnalysisMode.value)
-    }
+    },
+    highwheelAnalyse := (highwheelBaseAnalyseTask dependsOn (compile in Compile)).value
   )
 }
 

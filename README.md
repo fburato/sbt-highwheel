@@ -5,17 +5,17 @@ on scala project as part of the build process run with sbt.
 
 The plugin introduces the following settings:
 
-* (highwheelSpecFile: File) is the file to the specification file to use for the analysis. Defaults
+* `(highwheelSpecFile: File)` is the file to the specification file to use for the analysis. Defaults
 to `baseDirectory / "spec.hwm"`
-* (highwheelAnalysisMode: String) specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
+* `(highwheelAnalysisMode: String)` specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
 `strict`
-* (highwheelAnalysisPaths: Seq[File]) specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
+* `(highwheelAnalysisPaths: Seq[File])` specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
 
 
 The plugin also introduces the following tasks:
 
-* highwheelAnalyse: runs the analysis using the settings specified and fails if any error is thrown
-
+* `highwheelAnalyse`: runs the analysis using the settings specified and fails if any error is thrown. It depends on the compile task.
+* `highwheelBaseAnalyseTask`: same as `highwheelAnalyse`, but with no other task dependency 
 ## Installation
 
 Add to your `project/plugins.sbt` file the following line:
@@ -23,7 +23,7 @@ Add to your `project/plugins.sbt` file the following line:
 ```scala
 //resolvers += Resolver.mavenLocal
 
-addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.0")
+addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.1")
 ```
 
 Uncomment resolvers if you have installed highwheel or the pluing locally.
@@ -32,7 +32,7 @@ Add to your `build.sbt` the plugin as:
 
 ```scala
 lazy val root = project.in(file("."))
-  .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
+  .enablePlugins(com.github.fburato.highwheelmodulessbt.AnalyserPlugin)
   .settings(...
   )
 ```
@@ -52,7 +52,7 @@ lazy val datagateway = project.in(file("datagateway")).dependsOn(core)
 lazy val root = project.in(file("."))
   .dependsOn(web, datagateway)
   .aggregate(core, web, datagateway)
-  .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
+  .enablePlugins(com.github.fburato.highwheelmodulessbt.AnalyserPlugin)
   .settings(
     name := "my-project",
     version := "0.1",
@@ -73,7 +73,7 @@ lazy val datagateway = project.in(file("datagateway")).dependsOn(core)
 lazy val root = project.in(file("."))
   .dependsOn(web, datagateway)
   .aggregate(core, web, datagateway)
-  .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
+  .enablePlugins(com.github.fburato.highwheelmodulessbt.AnalyserPlugin)
   .settings(
     name := "my-project",
     version := "0.1",
@@ -93,7 +93,7 @@ lazy val analyseAll = taskKey[Unit]("Run analysis in all submodules and parent")
 lazy val root = project.in(file("."))
   .dependsOn(web, datagateway)
   .aggregate(core, web, datagateway)
-  .enablePlugins(org.pitest.highwheel.sbt.AnalyserPlugin)
+  .enablePlugins(com.github.fburato.highwheelmodulessbt.AnalyserPlugin)
   .settings(
     name := "my-project",
     version := "0.1",

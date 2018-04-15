@@ -7,6 +7,7 @@ import sbt._
 import com.github.fburato.highwheelmodules.core.AnalyserFacade
 import com.github.fburato.highwheelmodules.core.AnalyserFacade.EventSink._
 import com.github.fburato.highwheelmodules.core.AnalyserFacade._
+import com.github.fburato.highwheelmodules.utils.Pair
 import sbt.internal.util.ManagedLogger
 import scala.collection.JavaConverters._
 
@@ -74,9 +75,11 @@ object Analyser {
     override def directDependenciesCorrect(): Unit = log.info("No direct dependency violation detected")
 
     override def dependencyViolation(sourceModule: String, destModule: String,
-                                     expectedPath: util.List[String], actualPath: util.List[String], usagePath: util.List[String]): Unit =
-      log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual module path: ${pathToString(actualPath)}%s\n" +
-        f"    Actual usage path: ${pathToString(usagePath)}%s")
+                                     expectedPath: util.List[String], actualPath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
+      log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual module path: ${pathToString(actualPath)}%s")
+      log.error("    Actual usage path:")
+      printEvidence(log,actualPath,usagePath)
+    }
 
     override def noDirectDependencyViolation(source: String, dest: String): Unit = log.error(s"  $source -> $dest")
   }
@@ -92,9 +95,11 @@ object Analyser {
 
     override def noUndesiredDependencies(): Unit = log.info("No dependency violation detected")
 
-    override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String], usagePath: util.List[String]): Unit =
-      log.error(f"  $sourceModule%s -> $destModule%s, Actual module path: ${pathToString(path)}%s\n" +
-        f"    Actual usage path: ${pathToString(usagePath)}%s")
+    override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
+      log.error(f"  $sourceModule%s -> $destModule%s, Actual module path: ${pathToString(path)}%s\n")
+      log.error("    Actual usage path:")
+      printEvidence(log, path, usagePath)
+    }
 
   }
 
@@ -108,5 +113,17 @@ object Analyser {
     case "strict" => Some(ExecutionMode.STRICT)
     case "loose" => Some(ExecutionMode.LOOSE)
     case _ => None
+  }
+
+  private def printEvidence(log: ManagedLogger, modulePath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
+    def scalaVersion(modulePath: List[String], usagePath: List[List[Pair[String,String]]]): Unit = (modulePath, usagePath)  match {
+      case (source :: dest :: otherModules, sourceEvidences :: otherEvidences) =>
+        log.error(s"      $source -> $dest:")
+        for(evidence <- sourceEvidences)
+          yield log.error(s"        ${evidence.first} -> ${evidence.second}")
+        scalaVersion(dest :: otherModules, otherEvidences)
+      case (_,_) => ()
+    }
+    scalaVersion(modulePath.asScala.toList,usagePath.asScala.toList map ( l => l.asScala.toList))
   }
 }

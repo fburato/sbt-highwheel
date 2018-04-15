@@ -42,7 +42,7 @@ lazy val resolver = Seq(
 )
 
 lazy val dependenciesList = Seq (
-  "com.github.fburato" % "highwheel-modules-core" % "1.1.0"
+  "com.github.fburato" % "highwheel-modules-core" % "1.1.1"
 )
 
 lazy val addDependencies = Seq(

@@ -74,8 +74,9 @@ object Analyser {
     override def directDependenciesCorrect(): Unit = log.info("No direct dependency violation detected")
 
     override def dependencyViolation(sourceModule: String, destModule: String,
-                                     expectedPath: util.List[String], actualPath: util.List[String]): Unit =
-      log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual path: ${pathToString(actualPath)}%s")
+                                     expectedPath: util.List[String], actualPath: util.List[String], usagePath: util.List[String]): Unit =
+      log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual module path: ${pathToString(actualPath)}%s\n" +
+        f"    Actual usage path: ${pathToString(usagePath)}%s")
 
     override def noDirectDependencyViolation(source: String, dest: String): Unit = log.error(s"  $source -> $dest")
   }
@@ -91,8 +92,9 @@ object Analyser {
 
     override def noUndesiredDependencies(): Unit = log.info("No dependency violation detected")
 
-    override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String]): Unit =
-      log.error(f"  $sourceModule%s -> $destModule%s. Actual path: ${pathToString(path)}%s")
+    override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String], usagePath: util.List[String]): Unit =
+      log.error(f"  $sourceModule%s -> $destModule%s, Actual module path: ${pathToString(path)}%s\n" +
+        f"    Actual usage path: ${pathToString(usagePath)}%s")
 
   }
 

@@ -1,7 +1,7 @@
 # Highwheel sbt plugin
 
-Highwheel sbt plugin is an sbt 1.x plugin that allow to run highwheel-modules analysis
-on scala project as part of the build process run with sbt.
+Highwheel sbt plugin is an sbt 1.x plugin that allow to run [highwheel-modules](https://github.com/fburato/highwheel-modules) analysis
+on scala project as part of the build process run with sbt. 
 
 The plugin introduces the following settings:
 

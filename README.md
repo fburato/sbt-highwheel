@@ -10,6 +10,7 @@ to `baseDirectory / "spec.hwm"`
 * `(highwheelAnalysisMode: String)` specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
 `strict`
 * `(highwheelAnalysisPaths: Seq[File])` specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
+* `(highwheelEvidenceLimit: Int)` limits the pieces of evidence shown by the plugin to prove that a depdency exists or does not exist
 
 
 The plugin also introduces the following tasks:

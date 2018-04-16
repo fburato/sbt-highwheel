@@ -1,3 +1,4 @@
+import ReleaseTransformations._
 lazy val root = (project in file("."))
     .settings(
     name := "sbt-highwheel",
@@ -9,6 +10,7 @@ lazy val root = (project in file("."))
     addDependencies,
     release
   )
+import PgpKeys.publishSigned
 
 lazy val release = Seq(
   // To sync with Maven central, you need to supply the following information:
@@ -31,7 +33,21 @@ lazy val release = Seq(
   developers := List(
   Developer(id="fburato", name="Francesco Burato", email="frankburato-github@yahoo.com", url=url("https://github.com/fburato"))
   ),
-  publishArtifact in Test := false
+  publishArtifact in Test := false,
+  releaseProcess := Seq[ReleaseStep] (
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    releaseStepTask(publishSigned),
+    releaseStepCommand("sonatypeRelease"),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  )
 )
 
 lazy val resolver = Seq(

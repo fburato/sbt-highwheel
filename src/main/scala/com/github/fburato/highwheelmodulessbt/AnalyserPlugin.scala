@@ -79,8 +79,10 @@ object Analyser {
     override def dependencyViolation(sourceModule: String, destModule: String,
                                      expectedPath: util.List[String], actualPath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
       log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual module path: ${pathToString(actualPath)}%s")
-      log.error("    Actual usage path:")
-      printEvidence(log,actualPath,usagePath, evidenceLimit)
+      if(evidenceLimit >0) {
+        log.error("    Actual usage path:")
+        printEvidence(log, actualPath, usagePath, evidenceLimit)
+      }
     }
 
     override def noDirectDependencyViolation(source: String, dest: String): Unit = log.error(s"  $source -> $dest")
@@ -99,10 +101,11 @@ object Analyser {
 
     override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
       log.error(f"  $sourceModule%s -> $destModule%s, Actual module path: ${pathToString(path)}%s\n")
-      log.error("    Actual usage path:")
-      printEvidence(log, path, usagePath, evidenceLimit)
+      if (evidenceLimit > 0) {
+        log.error("    Actual usage path:")
+        printEvidence(log, path, usagePath, evidenceLimit)
+      }
     }
-
   }
 
   private def pathToString(path: util.List[String]): String =

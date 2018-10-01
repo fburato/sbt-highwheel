@@ -14,24 +14,24 @@ import scala.collection.JavaConverters._
 object AnalyserPlugin  extends AutoPlugin {
 
   object autoImport {
-    val highwheelSpecFile = settingKey[File]("Path to the specification file")
+    val highwheelSpecFiles = settingKey[Seq[File]]("Paths to the specification files")
     val highwheelAnalysisMode = settingKey[String]("Analysis mode. Either strict or loose")
     val highwheelAnalysisPaths = settingKey[Seq[File]]("Projects to add to the analysis")
     val highwheelAnalyse = taskKey[Unit]("Analyse output directories after compiling")
     val highwheelBaseAnalyseTask = taskKey[Unit]("Analyse output directories")
-    val highwheelEvidenceLimit = settingKey[Int]("Amount of dependencies to show in case of error")
+    val highwheelEvidenceLimit = settingKey[Option[Int]]("Amount of dependencies to show in case of error, None for all the evidence")
   }
 
   import autoImport._
 
   override lazy val projectSettings = Seq(
-    highwheelSpecFile := baseDirectory.value / "spec.hwm",
+    highwheelSpecFiles := Seq(baseDirectory.value / "spec.hwm"),
     highwheelAnalysisMode := "strict",
     highwheelAnalysisPaths := Seq((classDirectory in Compile).value),
-    highwheelEvidenceLimit := 5,
+    highwheelEvidenceLimit := Some(0),
     highwheelBaseAnalyseTask := {
       val log = streams.value.log
-      Analyser(log,highwheelSpecFile.value,highwheelAnalysisPaths.value,highwheelAnalysisMode.value, highwheelEvidenceLimit.value)
+      Analyser(log,highwheelSpecFiles.value,highwheelAnalysisPaths.value,highwheelAnalysisMode.value, highwheelEvidenceLimit.value)
     },
     highwheelAnalyse := (highwheelBaseAnalyseTask dependsOn (compile in Compile)).value
   )
@@ -39,12 +39,17 @@ object AnalyserPlugin  extends AutoPlugin {
 
 object Analyser {
 
-  def apply(log: ManagedLogger, specFile: File, analysisPaths: Seq[File],analysisMode: String, evidenceLimit: Int): Unit = {
-    log.info(s"Using specification file: ${specFile.getAbsolutePath}")
+  def apply(log: ManagedLogger, specFiles: Seq[File], analysisPaths: Seq[File],analysisMode: String, evidenceLimit: Option[Int]): Unit = {
+    val paths = specFiles.map(_.getAbsolutePath())
+    log.info(s"Using specification files: '${paths.mkString(",")}'")
 
     val executionMode = getExecutionMode(analysisMode).getOrElse(throw new Exception("Analysis mode needs to be either 'strict' or 'loose'"))
     val facade = new AnalyserFacade(printer(log),pathSink(log),measureSink(log),strictAnalysisSink(log,evidenceLimit),looseAnalysisSink(log,evidenceLimit))
-    facade.runAnalysis(new util.ArrayList(analysisPaths.map{ f => f.getAbsolutePath}.asJavaCollection),specFile.getAbsolutePath,executionMode)
+    facade.runAnalysis(new util.ArrayList(analysisPaths.map{ f => f.getAbsolutePath}.asJavaCollection),
+      new util.ArrayList(paths.asJavaCollection),
+      executionMode,
+      evidenceLimit.map(new Integer(_)).asJava
+    )
   }
 
   private def printer(log: ManagedLogger): Printer = s => log.info(s)
@@ -67,7 +72,7 @@ object Analyser {
   private def measureSink(log: ManagedLogger): MeasureEventSink = (module, fanIn, fanOut) =>
       log.info(f"  $module%20s --> fanIn: $fanIn%5d, fanOut: $fanOut%5d")
 
-  private def strictAnalysisSink(log: ManagedLogger, evidenceLimit: Int): StrictAnalysisEventSink = new StrictAnalysisEventSink {
+  private def strictAnalysisSink(log: ManagedLogger, evidenceLimit: Option[Int]): StrictAnalysisEventSink = new StrictAnalysisEventSink {
     override def dependencyViolationsPresent(): Unit = log.error("The following dependencies violate the specification:")
 
     override def noDirectDependenciesViolationPresent(): Unit = log.error("The following direct dependencies violate the specification:")
@@ -79,16 +84,21 @@ object Analyser {
     override def dependencyViolation(sourceModule: String, destModule: String,
                                      expectedPath: util.List[String], actualPath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
       log.error(f"  $sourceModule%s -> $destModule%s. Expected path: ${pathToString(expectedPath)}%s, Actual module path: ${pathToString(actualPath)}%s")
-      if(evidenceLimit >0) {
+      def logEvidence(): Unit = {
         log.error("    Actual usage path:")
-        printEvidence(log, actualPath, usagePath, evidenceLimit)
+        printEvidence(log, actualPath, usagePath)
+      }
+      evidenceLimit match {
+        case None => logEvidence()
+        case Some(x) if x > 0 => logEvidence()
+        case _ => ()
       }
     }
 
     override def noDirectDependencyViolation(source: String, dest: String): Unit = log.error(s"  $source -> $dest")
   }
 
-  private def looseAnalysisSink(log: ManagedLogger, evidenceLimit: Int): LooseAnalysisEventSink = new LooseAnalysisEventSink {
+  private def looseAnalysisSink(log: ManagedLogger, evidenceLimit: Option[Int]): LooseAnalysisEventSink = new LooseAnalysisEventSink {
     override def allDependenciesPresent(): Unit = log.info("All dependencies specified exist")
 
     override def undesiredDependencyViolationsPresent(): Unit = log.error("The following dependencies violate the specification:")
@@ -101,9 +111,14 @@ object Analyser {
 
     override def undesiredDependencyViolation(sourceModule: String, destModule: String, path: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
       log.error(f"  $sourceModule%s -> $destModule%s, Actual module path: ${pathToString(path)}%s\n")
-      if (evidenceLimit > 0) {
+      def logEvidence(): Unit = {
         log.error("    Actual usage path:")
-        printEvidence(log, path, usagePath, evidenceLimit)
+        printEvidence(log, path, usagePath)
+      }
+      evidenceLimit match {
+        case None => logEvidence()
+        case Some(x) if x > 0 => logEvidence()
+        case _ => ()
       }
     }
   }
@@ -120,19 +135,12 @@ object Analyser {
     case _ => None
   }
 
-  private def printEvidence(log: ManagedLogger, modulePath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]], evidenceLimit: Int): Unit = {
+  private def printEvidence(log: ManagedLogger, modulePath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
     def scalaVersion(modulePath: List[String], connections: List[List[Pair[String,String]]]): Unit = (modulePath, connections)  match {
       case (source :: dest :: otherModules, sourceEvidences :: otherEvidences) =>
         log.error(s"      $source -> $dest:")
-        val evidenceToPrint = if(evidenceLimit < 0 || evidenceLimit > sourceEvidences.size)
-          sourceEvidences.size
-        else
-          evidenceLimit
-        for(evidence <- sourceEvidences.take(evidenceToPrint))
+        for(evidence <- sourceEvidences)
           yield log.error(s"        ${evidence.first} -> ${evidence.second}")
-        if(evidenceToPrint < sourceEvidences.size) {
-          log.error(s"        (${sourceEvidences.size - evidenceToPrint} connections skipped)")
-        }
         scalaVersion(dest :: otherModules, otherEvidences)
       case (_,_) => ()
     }

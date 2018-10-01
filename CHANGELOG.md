@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [1.5] - 2018-10-01
+
+The world is clearly better with 1.5. New core `highwheel-modules` (now at version `1.3.0`) means more analysis with one pass of the bytecode, which means more efficiency and more fun.
+
+### Changed
+
+- `highwheelSpecFile` option renamed to `highwheelSpecFile` and changed its type to a sequence to allow multiple specification in the analysis.
+- `highwheelEvidenceLimit` type change to `Option[Int]` to make the evidence limitation more semantically close to the configuration.
+
 ## [1.4] - 2018-04-16
 
 Listing all pieces of evidence about a dependency violation seems like a good idea until you realise that even for small projects these pieces multiply quickly. 

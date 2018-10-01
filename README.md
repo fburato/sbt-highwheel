@@ -5,12 +5,12 @@ on scala project as part of the build process run with sbt.
 
 The plugin introduces the following settings:
 
-* `(highwheelSpecFile: File)` is the file to the specification file to use for the analysis. Defaults
-to `baseDirectory / "spec.hwm"`
+* `(highwheelSpecFiles: Seq[File])` are the files to the specification files to use for the analysis. Defaults
+to `Seq(baseDirectory / "spec.hwm)"`
 * `(highwheelAnalysisMode: String)` specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
 `strict`
 * `(highwheelAnalysisPaths: Seq[File])` specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
-* `(highwheelEvidenceLimit: Int)` limits the pieces of evidence shown by the plugin to prove that a depdency exists or does not exist
+* `(highwheelEvidenceLimit: Option[Int])` limits the pieces of evidence collected by the plugin to prove that a depdency exists or does not exist. A value of `None` entails all evidence is collected.
 
 
 The plugin also introduces the following tasks:
@@ -24,7 +24,7 @@ Add to your `project/plugins.sbt` file the following line:
 ```scala
 //resolvers += Resolver.mavenLocal
 
-addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.1")
+addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.5")
 ```
 
 Uncomment resolvers if you have installed highwheel or the pluing locally.

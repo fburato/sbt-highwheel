@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [1.6] - 2018-10-03
+
+No need to provide a fully qualified package for the modules anymore! With the update of the core
+hwm to 1.4.0, now you can provide a prefix in the preamble of the specification that will be
+added to all regex in the module specification. Isn't that cool?
+
 ## [1.5] - 2018-10-01
 
 The world is clearly better with 1.5. New core `highwheel-modules` (now at version `1.3.0`) means more analysis with one pass of the bytecode, which means more efficiency and more fun.

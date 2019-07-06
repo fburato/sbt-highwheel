@@ -15,7 +15,6 @@ object AnalyserPlugin  extends AutoPlugin {
 
   object autoImport {
     val highwheelSpecFiles = settingKey[Seq[File]]("Paths to the specification files")
-    val highwheelAnalysisMode = settingKey[String]("Analysis mode. Either strict or loose")
     val highwheelAnalysisPaths = settingKey[Seq[File]]("Projects to add to the analysis")
     val highwheelAnalyse = taskKey[Unit]("Analyse output directories after compiling")
     val highwheelBaseAnalyseTask = taskKey[Unit]("Analyse output directories")
@@ -26,12 +25,11 @@ object AnalyserPlugin  extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
     highwheelSpecFiles := Seq(baseDirectory.value / "spec.hwm"),
-    highwheelAnalysisMode := "strict",
     highwheelAnalysisPaths := Seq((classDirectory in Compile).value),
     highwheelEvidenceLimit := Some(0),
     highwheelBaseAnalyseTask := {
       val log = streams.value.log
-      Analyser(log,highwheelSpecFiles.value,highwheelAnalysisPaths.value,highwheelAnalysisMode.value, highwheelEvidenceLimit.value)
+      Analyser(log,highwheelSpecFiles.value,highwheelAnalysisPaths.value,highwheelEvidenceLimit.value)
     },
     highwheelAnalyse := (highwheelBaseAnalyseTask dependsOn (compile in Compile)).value
   )
@@ -39,15 +37,13 @@ object AnalyserPlugin  extends AutoPlugin {
 
 object Analyser {
 
-  def apply(log: ManagedLogger, specFiles: Seq[File], analysisPaths: Seq[File],analysisMode: String, evidenceLimit: Option[Int]): Unit = {
+  def apply(log: ManagedLogger, specFiles: Seq[File], analysisPaths: Seq[File],evidenceLimit: Option[Int]): Unit = {
     val paths = specFiles.map(_.getAbsolutePath())
     log.info(s"Using specification files: '${paths.mkString(",")}'")
 
-    val executionMode = getExecutionMode(analysisMode).getOrElse(throw new Exception("Analysis mode needs to be either 'strict' or 'loose'"))
     val facade = new AnalyserFacade(printer(log),pathSink(log),measureSink(log),strictAnalysisSink(log,evidenceLimit),looseAnalysisSink(log,evidenceLimit))
     facade.runAnalysis(new util.ArrayList(analysisPaths.map{ f => f.getAbsolutePath}.asJavaCollection),
       new util.ArrayList(paths.asJavaCollection),
-      executionMode,
       evidenceLimit.map(new Integer(_)).asJava
     )
   }
@@ -128,12 +124,6 @@ object Analyser {
       "(empty)"
     else
       path.asScala.mkString(" -> ")
-
-  def getExecutionMode(s: String): Option[ExecutionMode] = s match {
-    case "strict" => Some(ExecutionMode.STRICT)
-    case "loose" => Some(ExecutionMode.LOOSE)
-    case _ => None
-  }
 
   private def printEvidence(log: ManagedLogger, modulePath: util.List[String], usagePath: util.List[util.List[Pair[String,String]]]): Unit = {
     def scalaVersion(modulePath: List[String], connections: List[List[Pair[String,String]]]): Unit = (modulePath, connections)  match {

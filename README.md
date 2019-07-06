@@ -22,7 +22,7 @@ Add to your `project/plugins.sbt` file the following line:
 ```scala
 //resolvers += Resolver.mavenLocal
 
-addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.7")
+addSbtPlugin("com.github.fburato" %% "sbt-highwheel" % "1.8")
 ```
 
 Uncomment resolvers if you have installed highwheel or the pluing locally.

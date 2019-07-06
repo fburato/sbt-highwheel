@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [1.8] - 2019-07-6
+Just update the hwm core to 1.6.0 and removed the highwheelAnalysisMode option since the analysis mode is now in the 
+specification file with the `mode:` preamble. Nothing to see here.
+
 ## [1.7] - 2019-04-07
 HWM 1.5.0 comes full with new features: blacklist support, whitelist support and a new rule definition syntax
 that allows to make specification skinnier. 1.7 just switches to the latest version of the coolest architecture

@@ -7,8 +7,6 @@ The plugin introduces the following settings:
 
 * `(highwheelSpecFiles: Seq[File])` are the files to the specification files to use for the analysis. Defaults
 to `Seq(baseDirectory / "spec.hwm)"`
-* `(highwheelAnalysisMode: String)` specifies the type of analysis to run. Can be `"loose"` or `"strict"` and defaults to
-`strict`
 * `(highwheelAnalysisPaths: Seq[File])` specifies the paths to add to the analysis. Defaults to `classDirectory in Compile`
 * `(highwheelEvidenceLimit: Option[Int])` limits the pieces of evidence collected by the plugin to prove that a depdency exists or does not exist. A value of `None` entails all evidence is collected.
 
